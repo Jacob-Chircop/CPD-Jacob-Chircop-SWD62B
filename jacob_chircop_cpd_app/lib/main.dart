@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+// Initialize notification plugin
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +30,6 @@ class MainApp extends StatefulWidget {
 class MainAppState extends State<MainApp> {
   String locationMessage = "Location not available";
 
-  // Function to determine the location
   Future<void> getLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -55,8 +59,8 @@ class MainAppState extends State<MainApp> {
       setState(() {
         locationMessage =
             "Location permissions are permanently denied. Please enable them in settings.";
-        return;
       });
+      return;
     }
 
     // Get current location
@@ -67,7 +71,6 @@ class MainAppState extends State<MainApp> {
     });
   }
 
-  // Function to save the current parking location to Firebase Realtime Database
   Future<void> saveParkingLocation() async {
     try {
       // Get the current location
@@ -82,7 +85,6 @@ class MainAppState extends State<MainApp> {
         'latitude': position.latitude,
         'longitude': position.longitude,
         'timestamp': DateTime.now().toIso8601String(),
-
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -90,9 +92,30 @@ class MainAppState extends State<MainApp> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving parking location: $e')),
+        SnackBar(content: Text('Error saving location: $e')),
       );
     }
+  }
+
+  // Delay-based reminder (no schedule)
+  Future<void> showDelayedReminder(int minutes) async {
+    final androidDetails = AndroidNotificationDetails(
+      'parking_channel',
+      'Parking Reminder',
+      channelDescription: 'Reminder to check your parking meter',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    // Wait before showing
+    await Future.delayed(Duration(minutes: minutes));
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'Parking Meter Reminder',
+      'Your parking might be expiring now!',
+      NotificationDetails(android: androidDetails),
+    );
   }
 
   @override
@@ -115,6 +138,11 @@ class MainAppState extends State<MainApp> {
             ElevatedButton(
               onPressed: saveParkingLocation,
               child: const Text('Save Parking Spot'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => showDelayedReminder(1),
+              child: const Text('Set Reminder (1 min)'),
             ),
           ],
         ),
