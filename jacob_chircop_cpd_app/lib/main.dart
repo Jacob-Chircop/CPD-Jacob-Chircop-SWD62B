@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:jacob_chircop_cpd_app/services/get_location.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(
     MaterialApp(
       home: MainApp(),
@@ -64,31 +67,54 @@ class MainAppState extends State<MainApp> {
     });
   }
 
-  void _gotoStreamLocation() {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => const LocationUpdatesPage()));
+  // Function to save the current parking location to Firebase Realtime Database
+  Future<void> saveParkingLocation() async {
+    try {
+      // Get the current location
+      Position position = await Geolocator.getCurrentPosition();
+
+      // Reference to the "parking_locations" node in Realtime Database
+      DatabaseReference parkingLocationsRef =
+          FirebaseDatabase.instance.ref('parking_locations');
+
+      // Save the parking location data using push().set() to create a unique record
+      await parkingLocationsRef.push().set({
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+        'timestamp': DateTime.now().toIso8601String(),
+
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Parking location saved successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saving parking location: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Car Finder App'), // Updated Title
-        actions: [
-          IconButton(
-              onPressed: _gotoStreamLocation,
-              icon: const Icon(Icons.account_tree_outlined))
-        ],
+        title: const Text('Car Finder App'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(locationMessage),
+            Text(locationMessage, textAlign: TextAlign.center),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: getLocation,
               child: const Text('Get Location'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: saveParkingLocation,
+              child: const Text('Save Parking Spot'),
             ),
           ],
         ),
