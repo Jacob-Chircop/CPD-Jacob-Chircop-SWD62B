@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io' show Platform;
 import 'notification_helper.dart';
+import 'saved_locations_screen.dart';
 
 
 // Initialize notification plugin
@@ -152,6 +153,18 @@ class MainAppState extends State<MainApp> {
               ElevatedButton(
                 onPressed: () => showDelayedReminder(1),
                 child: const Text('Set Reminder (1 min)'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SavedLocationsScreen(),
+                    ),
+                  );
+                },
+                child: const Text('View Saved Spots'),
               ),
             ],
           ),
