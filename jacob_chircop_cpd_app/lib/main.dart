@@ -4,6 +4,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io' show Platform;
+import 'notification_helper.dart';
+
 
 // Initialize notification plugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -24,17 +26,6 @@ void main() async {
   runApp(const MaterialApp(home: MainApp()));
 }
 
-class NotificationHelper {
-  static Future<void> requestPermission() async {
-    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
-
-    if (androidImplementation != null) {
-      await androidImplementation.requestNotificationsPermission();
-    }
-  }
-}
 
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
