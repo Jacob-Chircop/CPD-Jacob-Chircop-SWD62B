@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'dart:io' show Platform;
 
 // Initialize notification plugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -11,11 +12,28 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(
-    MaterialApp(
-      home: MainApp(),
-    ),
-  );
+
+  const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initSettings = InitializationSettings(android: androidInit);
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
+
+  if (Platform.isAndroid) {
+    await NotificationHelper.requestPermission();
+  }
+
+  runApp(const MaterialApp(home: MainApp()));
+}
+
+class NotificationHelper {
+  static Future<void> requestPermission() async {
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidImplementation != null) {
+      await androidImplementation.requestNotificationsPermission();
+    }
+  }
 }
 
 class MainApp extends StatefulWidget {
@@ -31,8 +49,8 @@ class MainAppState extends State<MainApp> {
   String locationMessage = "Location not available";
 
   Future<void> getLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    LocationPermission permission = await Geolocator.checkPermission();
 
     // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -97,7 +115,6 @@ class MainAppState extends State<MainApp> {
     }
   }
 
-  // Delay-based reminder (no schedule)
   Future<void> showDelayedReminder(int minutes) async {
     final androidDetails = AndroidNotificationDetails(
       'parking_channel',
@@ -107,7 +124,6 @@ class MainAppState extends State<MainApp> {
       priority: Priority.high,
     );
 
-    // Wait before showing
     await Future.delayed(Duration(minutes: minutes));
 
     await flutterLocalNotificationsPlugin.show(
@@ -125,26 +141,29 @@ class MainAppState extends State<MainApp> {
         title: const Text('Car Finder App'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(locationMessage, textAlign: TextAlign.center),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: getLocation,
-              child: const Text('Get Location'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: saveParkingLocation,
-              child: const Text('Save Parking Spot'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => showDelayedReminder(1),
-              child: const Text('Set Reminder (1 min)'),
-            ),
-          ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(locationMessage, textAlign: TextAlign.center),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: getLocation,
+                child: const Text('Get Location'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: saveParkingLocation,
+                child: const Text('Save Parking Spot'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => showDelayedReminder(1),
+                child: const Text('Set Reminder (1 min)'),
+              ),
+            ],
+          ),
         ),
       ),
     );
