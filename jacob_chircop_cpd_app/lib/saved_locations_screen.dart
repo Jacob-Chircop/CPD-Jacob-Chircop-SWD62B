@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'location_details_screen.dart';
+
 
 class SavedLocationsScreen extends StatefulWidget {
   const SavedLocationsScreen({super.key});
@@ -30,6 +32,7 @@ class _SavedLocationsScreenState extends State<SavedLocationsScreen> {
           'latitude': data['latitude'],
           'longitude': data['longitude'],
           'timestamp': data['timestamp'],
+          'address': data['address'],
         });
       }
 
@@ -121,13 +124,31 @@ class _SavedLocationsScreenState extends State<SavedLocationsScreen> {
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ListTile(
-                    title: Text('Lat: ${item['latitude']}, Lng: ${item['longitude']}'),
-                    subtitle: Text('Saved at: ${item['timestamp']}'),
+                    title: Text(item['address'] ?? 'No address available'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Saved at: ${item['timestamp']}'),
+                      ],
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete),
                       tooltip: 'Delete this spot',
                       onPressed: () => deleteLocation(key, index),
                     ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => LocationDetailScreen(
+                            latitude: item['latitude'],
+                            longitude: item['longitude'],
+                            address: item['address'],
+                            timestamp: item['timestamp'],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 );
               },
