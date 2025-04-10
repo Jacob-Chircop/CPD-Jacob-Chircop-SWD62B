@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'location_details_screen.dart';
-
 
 class SavedLocationsScreen extends StatefulWidget {
   const SavedLocationsScreen({super.key});
@@ -35,7 +35,6 @@ class _SavedLocationsScreenState extends State<SavedLocationsScreen> {
           'address': data['address'],
         });
       }
-
       setState(() {
         locations = tempList.reversed.toList();
       });
@@ -49,21 +48,14 @@ class _SavedLocationsScreenState extends State<SavedLocationsScreen> {
         title: const Text('Clear All?'),
         content: const Text('Are you sure you want to delete all saved parking spots?'),
         actions: [
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          TextButton(
-            child: const Text('Delete All'),
-            onPressed: () => Navigator.pop(context, true),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete All')),
         ],
       ),
     );
 
     if (confirm == true) {
-      final dbRef = FirebaseDatabase.instance.ref('parking_locations');
-      await dbRef.remove();
+      await FirebaseDatabase.instance.ref('parking_locations').remove();
       setState(() => locations.clear());
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('All parking spots deleted.')),
@@ -78,21 +70,14 @@ class _SavedLocationsScreenState extends State<SavedLocationsScreen> {
         title: const Text('Delete Entry?'),
         content: const Text('Delete this saved parking spot?'),
         actions: [
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          TextButton(
-            child: const Text('Delete'),
-            onPressed: () => Navigator.pop(context, true),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
         ],
       ),
     );
 
     if (confirm == true) {
-      final dbRef = FirebaseDatabase.instance.ref('parking_locations/$key');
-      await dbRef.remove();
+      await FirebaseDatabase.instance.ref('parking_locations/$key').remove();
       setState(() => locations.removeAt(index));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Parking spot deleted.')),
@@ -120,20 +105,28 @@ class _SavedLocationsScreenState extends State<SavedLocationsScreen> {
               itemBuilder: (context, index) {
                 final item = locations[index];
                 final key = item['key'];
-
                 return Card(
+                  elevation: 3,
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   child: ListTile(
-                    title: Text(item['address'] ?? 'No address available'),
+                    contentPadding: const EdgeInsets.all(12),
+                    title: Text(
+                      item['address'] ?? 'No address available',
+                      style: GoogleFonts.ubuntu(fontWeight: FontWeight.w600),
+                    ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Saved at: ${item['timestamp']}'),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Saved at: ${item['timestamp']}',
+                          style: GoogleFonts.ubuntu(fontSize: 12, color: Colors.grey[700]),
+                        ),
                       ],
                     ),
                     trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      tooltip: 'Delete this spot',
+                      icon: const Icon(Icons.delete_outline),
                       onPressed: () => deleteLocation(key, index),
                     ),
                     onTap: () {
@@ -156,4 +149,3 @@ class _SavedLocationsScreenState extends State<SavedLocationsScreen> {
     );
   }
 }
-

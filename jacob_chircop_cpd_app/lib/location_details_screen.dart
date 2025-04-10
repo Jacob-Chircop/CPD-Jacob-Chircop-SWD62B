@@ -1,9 +1,10 @@
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'map_widget.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'main.dart';
-
+import 'map_widget.dart';
 
 class LocationDetailScreen extends StatefulWidget {
   final double latitude;
@@ -81,25 +82,36 @@ class _LocationDetailScreenState extends State<LocationDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Parking Spot Details')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Address:", style: Theme.of(context).textTheme.titleMedium),
-            Text(widget.address, style: const TextStyle(fontSize: 16)),
+            Text("Address:", style: GoogleFonts.ubuntu(fontWeight: FontWeight.w600, fontSize: 16)),
+            Text(widget.address, style: GoogleFonts.ubuntu(fontSize: 15)),
             const SizedBox(height: 16),
-            Text("Coordinates:", style: Theme.of(context).textTheme.titleMedium),
-            Text("Lat: ${widget.latitude}, Lng: ${widget.longitude}", style: const TextStyle(fontSize: 16)),
+            Text("Coordinates:", style: GoogleFonts.ubuntu(fontWeight: FontWeight.w600, fontSize: 16)),
+            Text("Lat: ${widget.latitude}, Lng: ${widget.longitude}",
+                style: GoogleFonts.ubuntu(fontSize: 14, color: Colors.grey[800])),
             const SizedBox(height: 16),
-            Text("Saved At:", style: Theme.of(context).textTheme.titleMedium),
-            Text(formattedDate, style: const TextStyle(fontSize: 16)),
+            Text("Saved At:", style: GoogleFonts.ubuntu(fontWeight: FontWeight.w600, fontSize: 16)),
+            Text(formattedDate, style: GoogleFonts.ubuntu(fontSize: 14, color: Colors.grey[800])),
             const SizedBox(height: 16),
-            MapWidget(latitude: widget.latitude, longitude: widget.longitude),
-            const SizedBox(height: 20),
-            ElevatedButton(
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: MapWidget(
+                latitude: widget.latitude,
+                longitude: widget.longitude,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
               onPressed: pickTimeAndSetReminder,
-              child: const Text("Set Reminder Time"),
+              icon: const Icon(Icons.alarm),
+              label: const Text("Set Reminder Time"),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+              ),
             )
           ],
         ),
