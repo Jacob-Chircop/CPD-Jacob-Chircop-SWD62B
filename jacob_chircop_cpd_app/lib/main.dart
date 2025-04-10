@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io' show Platform;
 import 'package:geolocator/geolocator.dart';
+//import 'package:jacob_chircop_cpd_app/responsive_screen.dart';
 import 'notification_helper.dart';
 import 'saved_locations_screen.dart';
 import 'location_service.dart';
@@ -12,6 +13,9 @@ import 'package:google_fonts/google_fonts.dart';
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
+// void main() {
+//   runApp(const MaterialApp(home: ResponsiveScreen()));
+// }
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
